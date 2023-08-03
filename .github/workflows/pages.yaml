@@ -30,7 +30,7 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Generate index
         run: |
-          mkdir github-pages
+          mkdir -p github-pages/simple
           pip install pygithub
           python generate_index.py > github-pages/simple/index.html
         env:
