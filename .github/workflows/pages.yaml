@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir github-pages
           pip install pygithub
-          python generate_index.py > github-pages/index.html
+          python generate_index.py > github-pages/simple/index.html
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload artifact
