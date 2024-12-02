@@ -15,8 +15,7 @@ python3.9 -m venv "${venv_dir}"
 "${venv_dir}/bin/pip" install -r ./requirements.txt
 
 # Generate the Pants PyPi-compatible index.
-mkdir -p "${output_dir}/public/simple"
-"${venv_dir}/bin/python" ./generate_index.py > "${output_dir}/public/simple/index.html"
+"${venv_dir}/bin/python" ./generate_index.py --prefix=/simple "${output_dir}/public/simple" 
 
 # Serve a copy of the generated index on port 8080.
 python3.9 -m http.server -d "${output_dir}/public" --bind 127.0.0.1 8080 &
