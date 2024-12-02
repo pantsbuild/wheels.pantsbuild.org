@@ -1,0 +1,32 @@
+name: Test index generator
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  test-index-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup Python 3.9.x because the test scrpt uses Python 3.9 currently since the Python interpreter's version must match
+      # the Python version required by Pants version used for the test (or else Pip will fail to install Pants).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Generate and test Pants PyPi index
+        run: "./test_generated_index.sh output"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      # Store the generated HTML as an artifact for later inspection.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-output
+          path: output/public/
+          if-no-files-found: error
