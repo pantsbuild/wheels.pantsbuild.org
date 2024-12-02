@@ -70,7 +70,7 @@ def main(args):
             """
         ))
         for package_name in package_names:
-            f.write(f"""<li><a href="{prefix}/{package_name}/">{package_name}</li>\n""")
+            f.write(f"""<li><a href="{prefix}/{package_name}/">{package_name}</a></li>\n""")
         f.write(dedent(
             """\
             </ul>
