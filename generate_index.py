@@ -50,6 +50,8 @@ def main(args):
     package_names = sorted(packages.keys())
 
     prefix = opts.url_path_prefix
+    if prefix and prefix.endswith("/"):
+        prefix = prefix[0:-1]
 
     output_dir = Path(opts.output_dir)
     if output_dir.exists():
@@ -68,7 +70,7 @@ def main(args):
             """
         ))
         for package_name in package_names:
-            f.write(f"""<li><a href="{prefix}{package_name}/">{package_name}</li>\n""")
+            f.write(f"""<li><a href="{prefix}/{package_name}/">{package_name}</li>\n""")
         f.write(dedent(
             """\
             </ul>
