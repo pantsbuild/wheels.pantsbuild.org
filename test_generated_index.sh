@@ -28,7 +28,7 @@ pants_venv_dir="${output_dir}/pants-venv"
 python3.9 -m venv "${pants_venv_dir}"
 "${pants_venv_dir}/bin/pip" install -vv \
   --extra-index-url=http://127.0.0.1:8080/simple/ \
-  pantsbuild.pants==2.18.0
+  pantsbuild.pants==2.18.0a0
 
 # Verify that the Pants console script is in the expected location.
 if [ ! -f "${pants_venv_dir}/bin/pants" ]; then
