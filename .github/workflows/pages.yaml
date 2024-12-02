@@ -30,9 +30,9 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Generate index
         run: |
-          mkdir -p github-pages/simple
+          mkdir -p github-pages
           pip install pygithub
-          python generate_index.py > github-pages/simple/index.html
+          python generate_index.py github-pages/simple
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload artifact
