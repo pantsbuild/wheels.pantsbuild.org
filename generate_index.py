@@ -54,7 +54,7 @@ def _write_package_specific_index(output_dir: Path, package_name: str, package_v
     package_output_dir = output_dir / package_name
     package_output_dir.mkdir()
 
-    package_version_keys = sorted(package_versions.keys())
+    package_version_keys = sorted(package_versions.keys(), reverse=True)
 
     with open(package_output_dir / "index.html", "w") as f:
         f.write(dedent(
