@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
-import json
 import os
 from pathlib import Path
 import sys
+from typing import Any, Iterable
+import github.GitReleaseAsset
 from packaging.utils import parse_wheel_filename
+from packaging.version import Version
 from urllib.parse import urlparse
 from textwrap import dedent
 
@@ -18,7 +20,7 @@ import github
 ##
 
 
-def get_pants_python_packages(gh: github.Github) -> tuple[str, ...]:
+def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list[Any]]]:
     repo = gh.get_repo("pantsbuild/pants")
     all_releases = repo.get_releases()
 
@@ -33,10 +35,19 @@ def get_pants_python_packages(gh: github.Github) -> tuple[str, ...]:
     packages = defaultdict(lambda: defaultdict(list))
 
     for asset in pants_wheel_assets:
-        name, version, build_tag, tags = parse_wheel_filename(asset.name)
+        name, version, _build_tag, _tags = parse_wheel_filename(asset.name)
         packages[name][version].append(asset)
     
     return packages
+
+
+def _legacy_flat_links(packages: dict[str, dict[Version, list[Any]]]) -> tuple[str, ...]:
+    return [
+        f'<a href="{asset.browser_download_url}">{asset.name}</a><br>'
+        for package_versions in packages.values()
+        for _, version_release_assets in sorted(package_versions.items(), reverse=True)
+        for asset in version_release_assets
+    ]
 
 
 def main(args):
@@ -69,8 +80,12 @@ def main(args):
             <ul>
             """
         ))
+        
         for package_name in package_names:
             f.write(f"""<li><a href="{prefix}/{package_name}/">{package_name}</a></li>\n""")
+
+        f.write("\n".join(_legacy_flat_links(packages)))
+
         f.write(dedent(
             """\
             </ul>
@@ -98,7 +113,7 @@ def main(args):
                 <ul>
                 """
             ))
-            
+
             for package_version_key in package_version_keys:
                 package_version_assets = package[package_version_key]
                 package_version_assets.sort(key=lambda x: x.name)
