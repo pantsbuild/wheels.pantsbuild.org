@@ -31,6 +31,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+      - name: Initialize Pants launcher
+        uses: pantsbuild/actions/init-pants@56efcdb79721bc7726edf542e324468033e4e21c
+        with:
+          # cache0 makes it easy to bust the cache if needed
+          gha-cache-key: cache0-py3.9
+          named-caches-hash: ${{ hashFiles('3rdparty/python/default.lock') }}
       - name: Generate index
         run: |
           mkdir -p github-pages
