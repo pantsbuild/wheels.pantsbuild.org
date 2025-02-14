@@ -9,18 +9,17 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Iterable
-from urllib.parse import urlparse
+from typing import Any
 
 import github
 import github.GitReleaseAsset
 from packaging.utils import parse_wheel_filename
 from packaging.version import Version
 
-##
-## Output a PEP 503 compliant package repository for Pants wheels.
-## See https://peps.python.org/pep-0503/
-##
+#
+# Output a PEP 503 compliant package repository for Pants wheels.
+# See https://peps.python.org/pep-0503/
+#
 
 
 def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list[Any]]]:
@@ -35,7 +34,9 @@ def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list
         if asset.name.endswith(".whl")
     ]
 
-    packages = defaultdict(lambda: defaultdict(list))
+    packages: dict[str, dict[Version, list[Any]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
 
     for asset in pants_wheel_assets:
         name, version, _build_tag, _tags = parse_wheel_filename(asset.name)
@@ -44,9 +45,7 @@ def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list
     return packages
 
 
-def _legacy_flat_links(
-    packages: dict[str, dict[Version, list[Any]]]
-) -> tuple[str, ...]:
+def _legacy_flat_links(packages: dict[str, dict[Version, list[Any]]]) -> list[str]:
     return [
         f'<a href="{asset.browser_download_url}">{asset.name}</a><br>'
         for package_versions in packages.values()

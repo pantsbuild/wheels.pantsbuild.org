@@ -22,3 +22,6 @@ pip_version = "latest"
 
 [python-infer]
 unowned_dependency_behavior = "error"
+
+[flake8]
+config = ".flake8"
