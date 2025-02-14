@@ -15,7 +15,6 @@ experimental_test_shell_command(
     execution_dependencies=[":generate_index", ":shell_src"],
     command="./test_generated_index.sh output",
     extra_env_vars=["GH_TOKEN", "PATH"],
-    #tools=["bash", "mkdir", "python3.9"],
     path_env_modify="off",
     log_output=True,
     timeout=60,
