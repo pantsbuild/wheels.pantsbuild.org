@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2024 Pants project contributors (see CONTRIBUTORS.md).
+# Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 output_dir="$1"
 if [ -z "${output_dir}" ]; then
