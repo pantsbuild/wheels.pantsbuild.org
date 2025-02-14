@@ -38,6 +38,8 @@ jobs:
         run: |
           mkdir -p dist/output
           pants run :generate_index -- --url-path-prefix=/simple dist/output/public/simple
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # Store the generated HTML as an artifact for later inspection.
       - uses: actions/upload-artifact@v4
