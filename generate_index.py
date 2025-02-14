@@ -4,18 +4,18 @@
 from __future__ import annotations
 
 import argparse
-from collections import defaultdict
 import os
-from pathlib import Path
 import sys
+from collections import defaultdict
+from pathlib import Path
+from textwrap import dedent
 from typing import Any, Iterable
+from urllib.parse import urlparse
+
+import github
 import github.GitReleaseAsset
 from packaging.utils import parse_wheel_filename
 from packaging.version import Version
-from urllib.parse import urlparse
-from textwrap import dedent
-
-import github
 
 ##
 ## Output a PEP 503 compliant package repository for Pants wheels.
@@ -40,11 +40,13 @@ def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list
     for asset in pants_wheel_assets:
         name, version, _build_tag, _tags = parse_wheel_filename(asset.name)
         packages[name][version].append(asset)
-    
+
     return packages
 
 
-def _legacy_flat_links(packages: dict[str, dict[Version, list[Any]]]) -> tuple[str, ...]:
+def _legacy_flat_links(
+    packages: dict[str, dict[Version, list[Any]]]
+) -> tuple[str, ...]:
     return [
         f'<a href="{asset.browser_download_url}">{asset.name}</a><br>'
         for package_versions in packages.values()
@@ -52,38 +54,46 @@ def _legacy_flat_links(packages: dict[str, dict[Version, list[Any]]]) -> tuple[s
         for asset in version_release_assets
     ]
 
+
 # http://repository.example.com/simple/PACKAGE_NAME/
-def _write_package_specific_index(output_dir: Path, package_name: str, package_versions: dict[Version, list[Any]]) -> None:
+def _write_package_specific_index(
+    output_dir: Path, package_name: str, package_versions: dict[Version, list[Any]]
+) -> None:
     package_output_dir = output_dir / package_name
     package_output_dir.mkdir()
 
     package_version_keys = sorted(package_versions.keys(), reverse=True)
 
     with open(package_output_dir / "index.html", "w") as f:
-        f.write(dedent(
-            f"""\
+        f.write(
+            dedent(
+                f"""\
             <!DOCTYPE html>
             <html>
             <body>
             <h1>Links for Pantsbuild Wheels - {package_name}</h1>
             <ul>
             """
-        ))
+            )
+        )
 
         for package_version_key in package_version_keys:
             package_version_assets = package_versions[package_version_key]
             package_version_assets.sort(key=lambda x: x.name)
             for asset in package_version_assets:
-                f.write(f"""<li><a href="{asset.browser_download_url}">{asset.name}</a></li>\n""")
-        
-        f.write(dedent(
-            """\
+                f.write(
+                    f"""<li><a href="{asset.browser_download_url}">{asset.name}</a></li>\n"""
+                )
+
+        f.write(
+            dedent(
+                """\
             </ul>
             </body>
             </html>
             """
-        ))
-
+            )
+        )
 
 
 def main(args):
@@ -107,28 +117,34 @@ def main(args):
 
     # http://repository.example.com/simple/
     with open(output_dir / "index.html", "w") as f:
-        f.write(dedent(
-            """\
+        f.write(
+            dedent(
+                """\
             <!DOCTYPE html>
             <html>
             <body>
             <h1>Links for Pantsbuild Wheels</h1>
             <ul>
             """
-        ))
-        
+            )
+        )
+
         for package_name in package_names:
-            f.write(f"""<li><a href="{prefix}/{package_name}/">{package_name}</a></li>\n""")
+            f.write(
+                f"""<li><a href="{prefix}/{package_name}/">{package_name}</a></li>\n"""
+            )
 
         f.write("\n".join(_legacy_flat_links(packages)))
 
-        f.write(dedent(
-            """\
+        f.write(
+            dedent(
+                """\
             </ul>
             </body>
             </html>
             """
-        ))
+            )
+        )
 
     # http://repository.example.com/simple/PACKAGE_NAME/
     for package_name in package_names:
