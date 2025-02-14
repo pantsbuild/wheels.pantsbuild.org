@@ -19,8 +19,25 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Generate and test Pants PyPi index
-        run: "./test_generated_index.sh output"
+      - name: Initialize Pants launcher
+        uses: pantsbuild/actions/init-pants@56efcdb79721bc7726edf542e324468033e4e21c
+        with:
+          # cache0 makes it easy to bust the cache if needed
+          gha-cache-key: cache0-py3.9
+          named-caches-hash: ${{ hashFiles('3rdparty/python/default.lock') }}
+
+      - name: Lint and typechecks
+        run: "pants lint check ::"
+
+      - name: Run tests
+        run: "pants test ::"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Generate output
+        run: |
+          mkdir -p dist/output
+          pants run :generate_index -- --url-path-prefix=/simple dist/output/public/simple
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -28,5 +45,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: generated-output
-          path: output/public/
+          path: dist/output/public/
           if-no-files-found: error

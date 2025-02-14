@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2024 Pants project contributors (see CONTRIBUTORS.md).
+# Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 output_dir="$1"
 if [ -z "${output_dir}" ]; then
@@ -13,18 +15,14 @@ mkdir -p "${output_dir}"
 
 set -xeo pipefail
 
-# Setup venv for the generator script.
-venv_dir="${output_dir}/.venv"
-python3.9 -m venv "${venv_dir}"
-"${venv_dir}/bin/pip" install -r ./requirements.txt
-
 # Generate the Pants PyPi-compatible index.
-"${venv_dir}/bin/python" ./generate_index.py \
+./generate_index.pex \
     --url-path-prefix=/simple \
     "${output_dir}/public/simple"
 
 # Serve a copy of the generated index on port 8080.
 python3.9 -m http.server -d "${output_dir}/public" --bind 127.0.0.1 8080 &
+http_server_pid="$!"
 
 # Setup another virtual environment in temporary directory and install a version of Pants into it.
 # Note: The Python version (e.g., 3.9) must match the Python version required by the version of Pants
@@ -33,7 +31,10 @@ pants_venv_dir="${output_dir}/pants-venv"
 python3.9 -m venv "${pants_venv_dir}"
 "${pants_venv_dir}/bin/pip" install -vv \
     --extra-index-url=http://127.0.0.1:8080/simple/ \
-    pantsbuild.pants==2.23.0
+    pantsbuild.pants==2.24.1
+
+# Kill the server explicitly so the test does not hang waiting for it to exit.
+kill -9 "$http_server_pid"
 
 # Verify that the Pants console script is in the expected location.
 if [ ! -f "${pants_venv_dir}/bin/pants" ]; then
