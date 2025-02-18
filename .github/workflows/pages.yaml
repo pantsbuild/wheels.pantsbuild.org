@@ -41,6 +41,8 @@ jobs:
         run: |
           mkdir -p github-pages
           pants run :generate_index -- --url-path-prefix=/simple github-pages/simple
+          # Experiment: Generate a distinct index without legacy top-level links for recent Pants versions.
+          pants run :generate_index -- --url-path-prefix=/edge/simple --exclude-legacy-links  github-pages/edge/simple
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload artifact

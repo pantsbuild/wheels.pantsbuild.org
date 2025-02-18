@@ -7,6 +7,7 @@ import argparse
 import os
 import sys
 from collections import defaultdict
+from copy import deepcopy
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
@@ -43,6 +44,19 @@ def get_pants_python_packages(gh: github.Github) -> dict[str, dict[Version, list
         packages[name][version].append(asset)
 
     return packages
+
+
+def _apply_version_filter(
+    packages: dict[str, dict[Version, list[Any]]], max_version: Version
+) -> None:
+    to_delete: set[tuple[str, Version]] = set()
+    for package_name, package in packages.items():
+        for version in package.keys():
+            if version >= max_version:
+                to_delete.add((package_name, version))
+
+    for name, version in to_delete:
+        del packages[name][version]
 
 
 def _legacy_flat_links(packages: dict[str, dict[Version, list[Any]]]) -> list[str]:
@@ -98,10 +112,12 @@ def _write_package_specific_index(
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--url-path-prefix", default="/", action="store")
+    parser.add_argument("--exclude-legacy-links", default=False, action="store_true")
     parser.add_argument("output_dir", action="store")
     opts = parser.parse_args(args)
 
     github_client = github.Github(auth=github.Auth.Token(os.environ["GH_TOKEN"]))
+
     packages = get_pants_python_packages(github_client)
     package_names = sorted(packages.keys())
 
@@ -133,7 +149,12 @@ def main(args):
                 f"""<li><a href="{prefix}/{package_name}/">{package_name}</a></li>\n"""
             )
 
-        f.write("\n".join(_legacy_flat_links(packages)))
+        if opts.exclude_legacy_links:
+            packages_copy = deepcopy(packages)
+            _apply_version_filter(packages_copy, Version("2.25.0.dev0"))
+            f.write("\n".join(_legacy_flat_links(packages_copy)))
+        else:
+            f.write("\n".join(_legacy_flat_links(packages)))
 
         f.write(
             dedent(
