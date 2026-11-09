@@ -10,7 +10,7 @@ pex_binary(
 
 shell_source(name="shell_src", source="test_generated_index.sh")
 
-experimental_test_shell_command(
+test_shell_command(
     name="integration_test",
     execution_dependencies=[":generate_index", ":shell_src"],
     command="./test_generated_index.sh output",

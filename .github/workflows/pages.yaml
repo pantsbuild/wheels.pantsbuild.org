@@ -22,7 +22,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,12 +30,12 @@ jobs:
         uses: actions/configure-pages@v3
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.14'
       - name: Initialize Pants launcher
         uses: pantsbuild/actions/init-pants@56efcdb79721bc7726edf542e324468033e4e21c
         with:
           # cache0 makes it easy to bust the cache if needed
-          gha-cache-key: cache0-py3.9
+          gha-cache-key: cache0-py3.14
           named-caches-hash: ${{ hashFiles('3rdparty/python/default.lock') }}
       - name: Generate index
         run: |
